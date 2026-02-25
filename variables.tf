@@ -482,3 +482,9 @@ variable "config_bucket_expiration_days" {
   type        = number
   default     = null
 }
+
+variable "cloudwatch_metric_stream_output_format" {
+  description = "The output format for the CloudWatch Metric Stream. Valid values are 'json', 'opentelemetry0.7', and 'opentelemetry1.0'."
+  type        = string
+  default     = "opentelemetry0.7"
+}
