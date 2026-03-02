@@ -435,6 +435,12 @@ variable "create_metric_streams_aws_resources" {
   default     = true
 }
 
+variable "cloudwatch_metric_stream_output_format" {
+  description = "The output format for the CloudWatch Metric Stream. This module accepts only 'opentelemetry0.7' or 'opentelemetry1.0' (the underlying AWS resource also supports 'json', but this module is intended for OpenTelemetry formats only)."
+  type        = string
+  default     = "opentelemetry1.0"
+}
+
 variable "cloudwatch_metric_stream_include_filters" {
   description = "List of filters specifying which metrics to include in the CloudWatch Metric Stream. Each filter must specify a 'namespace' and a list of 'metric_names'. Providing an empty list for 'metric_names' includes all metrics from the specified namespace. Mutually exclusive with cloudwatch_metric_stream_exclude_filters. Optional."
   type = list(object({
