@@ -484,7 +484,7 @@ variable "config_bucket_expiration_days" {
 }
 
 variable "cloudwatch_metric_stream_output_format" {
-  description = "The output format for the CloudWatch Metric Stream. Valid values are 'json', 'opentelemetry0.7', and 'opentelemetry1.0'."
+  description = "The output format for the CloudWatch Metric Stream. This module accepts only 'opentelemetry0.7' or 'opentelemetry1.0' (the underlying AWS resource also supports 'json', but this module is intended for OpenTelemetry formats only)."
   type        = string
   default     = "opentelemetry1.0"
 }
