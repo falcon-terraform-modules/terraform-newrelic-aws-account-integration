@@ -6,8 +6,8 @@ This Terraform module constructs and configures the necessary resources for inte
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.61.0 |
-| <a name="requirement_newrelic"></a> [newrelic](#requirement\_newrelic) | >= 3.40.1 |
+| <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 6.42.0 |
+| <a name="requirement_newrelic"></a> [newrelic](#requirement\_newrelic) | >= 3.85.0 |
 
 ## Resources
 

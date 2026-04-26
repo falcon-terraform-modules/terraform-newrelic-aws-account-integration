@@ -540,10 +540,10 @@ resource "newrelic_cloud_aws_integrations" "api_polling" {
 
 resource "aws_s3_bucket" "firehose" {
   count         = var.create_metric_streams_aws_resources ? 1 : 0
-  bucket        = "${local.firehose_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.name]}"
+  bucket        = "${local.firehose_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.region]}"
   force_destroy = true
   tags = {
-    Name = "${local.firehose_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.firehose_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
@@ -595,10 +595,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "firehose" {
 
 resource "aws_iam_role" "firehose" {
   count              = var.create_metric_streams_aws_resources ? 1 : 0
-  name               = "${local.firehose_role_name}-${local.region_short_name[data.aws_region.current.name]}"
+  name               = "${local.firehose_role_name}-${local.region_short_name[data.aws_region.current.region]}"
   assume_role_policy = data.aws_iam_policy_document.assume_role["firehose"].json
   tags = {
-    Name = "${local.firehose_role_name}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.firehose_role_name}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
@@ -623,10 +623,10 @@ data "aws_iam_policy_document" "firehose" {
 
 resource "aws_iam_policy" "firehose" {
   count  = var.create_metric_streams_aws_resources ? 1 : 0
-  name   = "${local.firehose_policy_name}-${local.region_short_name[data.aws_region.current.name]}"
+  name   = "${local.firehose_policy_name}-${local.region_short_name[data.aws_region.current.region]}"
   policy = data.aws_iam_policy_document.firehose[0].json
   tags = {
-    Name = "${local.firehose_policy_name}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.firehose_policy_name}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
@@ -667,10 +667,10 @@ resource "aws_kinesis_firehose_delivery_stream" "main" {
 
 resource "aws_iam_role" "cwstream" {
   count              = var.create_metric_streams_aws_resources ? 1 : 0
-  name               = "${local.cwstream_role_name}-${local.region_short_name[data.aws_region.current.name]}"
+  name               = "${local.cwstream_role_name}-${local.region_short_name[data.aws_region.current.region]}"
   assume_role_policy = data.aws_iam_policy_document.assume_role["streams.metrics.cloudwatch"].json
   tags = {
-    Name = "${local.cwstream_role_name}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.cwstream_role_name}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
@@ -688,10 +688,10 @@ data "aws_iam_policy_document" "cwstream" {
 
 resource "aws_iam_policy" "cwstream" {
   count  = var.create_metric_streams_aws_resources ? 1 : 0
-  name   = "${local.cwstream_policy_name}-${local.region_short_name[data.aws_region.current.name]}"
+  name   = "${local.cwstream_policy_name}-${local.region_short_name[data.aws_region.current.region]}"
   policy = data.aws_iam_policy_document.cwstream[0].json
   tags = {
-    Name = "${local.cwstream_policy_name}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.cwstream_policy_name}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
@@ -728,10 +728,10 @@ resource "aws_cloudwatch_metric_stream" "main" {
 
 resource "aws_s3_bucket" "config" {
   count         = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
-  bucket        = "${local.config_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.name]}"
+  bucket        = "${local.config_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.region]}"
   force_destroy = true
   tags = {
-    Name = "${local.config_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.config_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
@@ -783,16 +783,16 @@ resource "aws_s3_bucket_lifecycle_configuration" "config" {
 
 resource "aws_iam_role" "config" {
   count              = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
-  name               = "${local.config_role_name}-${local.region_short_name[data.aws_region.current.name]}"
+  name               = "${local.config_role_name}-${local.region_short_name[data.aws_region.current.region]}"
   assume_role_policy = data.aws_iam_policy_document.assume_role["config"].json
   tags = {
-    Name = "${local.config_role_name}-${local.region_short_name[data.aws_region.current.name]}"
+    Name = "${local.config_role_name}-${local.region_short_name[data.aws_region.current.region]}"
   }
 }
 
 resource "aws_iam_role_policy" "config" {
   count = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
-  name  = "${local.config_role_name}-${local.region_short_name[data.aws_region.current.name]}_inline"
+  name  = "${local.config_role_name}-${local.region_short_name[data.aws_region.current.region]}_inline"
   role  = var.create_metric_streams_aws_resources && var.aws_config_enabled ? aws_iam_role.config[0].name : ""
   policy = jsonencode({
     Version = "2012-10-17"
