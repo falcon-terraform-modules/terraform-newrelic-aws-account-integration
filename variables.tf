@@ -429,6 +429,22 @@ variable "link_aws_account_api_polling_aws_integrations" {
   }
 }
 
+variable "aws_region" {
+  description = "AWS region to deploy resources. If not specified, the region configured in the AWS provider is used."
+  type        = string
+  default     = null
+  validation {
+    condition = var.aws_region == null || contains([
+      "us-east-1", "us-east-2", "us-west-1", "us-west-2",
+      "ap-south-1", "ap-northeast-1", "ap-northeast-2", "ap-northeast-3",
+      "ap-southeast-1", "ap-southeast-2",
+      "ca-central-1", "eu-central-1", "eu-west-1", "eu-west-2", "eu-west-3",
+      "eu-north-1", "sa-east-1"
+    ], var.aws_region)
+    error_message = "Unsupported AWS region. The region must be one of the values supported"
+  }
+}
+
 variable "create_metric_streams_aws_resources" {
   description = "Specifies whether to enable or disable the creation of AWS resources necessary for integration using Metrics Streams. Set the value to `false` if you do not integrate using Metrics Streams."
   type        = bool

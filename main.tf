@@ -1,4 +1,14 @@
 locals {
+  cwstream_role_name   = "MetricStreamRole-FirehosePutRecords-NewRelic"
+  cwstream_policy_name = "MetricStreamPolicy-FirehosePutRecords-NewRelic"
+  cwstream_name        = "NewRelic-MetricStreams"
+  firehose_role_name   = "KinesisFirehoseServiceRole-PUT-MetricStreams-NewRelic"
+  firehose_policy_name = "KinesisFirehoseServicePolicy-PUT-MetricStreams-NewRelic"
+  firehose_stream_name = "NewRelic-MetricStreams"
+  firehose_bucket_name = "firehose-backup-newrelic-metricstreams"
+  config_bucket_name   = "aws-config"
+  config_role_name     = "AWSConfigServiceRole"
+  config_policy_name   = "AWSConfigServicePolicy"
   region_short_name = {
     us-east-1      = "use1"
     us-east-2      = "use2"
@@ -20,22 +30,11 @@ locals {
   }
 }
 
-locals {
-  cwstream_role_name   = "MetricStreamRole-FirehosePutRecords-NewRelic"
-  cwstream_policy_name = "MetricStreamPolicy-FirehosePutRecords-NewRelic"
-  cwstream_name        = "NewRelic-MetricStreams"
-  firehose_role_name   = "KinesisFirehoseServiceRole-PUT-MetricStreams-NewRelic"
-  firehose_policy_name = "KinesisFirehoseServicePolicy-PUT-MetricStreams-NewRelic"
-  firehose_stream_name = "NewRelic-MetricStreams"
-  firehose_bucket_name = "firehose-backup-newrelic-metricstreams"
-  config_bucket_name   = "aws-config"
-  config_role_name     = "AWSConfigServiceRole"
-  config_policy_name   = "AWSConfigServicePolicy"
-}
-
 data "aws_caller_identity" "current" {}
 
-data "aws_region" "current" {}
+data "aws_region" "current" {
+  region = var.aws_region
+}
 
 data "aws_iam_policy_document" "assume_role" {
   for_each = toset([
@@ -540,6 +539,7 @@ resource "newrelic_cloud_aws_integrations" "api_polling" {
 
 resource "aws_s3_bucket" "firehose" {
   count         = var.create_metric_streams_aws_resources ? 1 : 0
+  region        = var.aws_region
   bucket        = "${local.firehose_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.region]}"
   force_destroy = true
   tags = {
@@ -549,6 +549,7 @@ resource "aws_s3_bucket" "firehose" {
 
 resource "aws_s3_bucket_versioning" "firehose" {
   count  = var.create_metric_streams_aws_resources ? 1 : 0
+  region = var.aws_region
   bucket = var.create_metric_streams_aws_resources ? aws_s3_bucket.firehose[0].bucket : ""
   versioning_configuration {
     status = "Enabled"
@@ -557,6 +558,7 @@ resource "aws_s3_bucket_versioning" "firehose" {
 
 resource "aws_s3_bucket_lifecycle_configuration" "firehose" {
   count  = var.create_metric_streams_aws_resources ? 1 : 0
+  region = var.aws_region
   bucket = var.create_metric_streams_aws_resources ? aws_s3_bucket.firehose[0].bucket : ""
   dynamic "rule" {
     for_each = var.firehose_bucket_expiration_days != null ? [1] : []
@@ -638,6 +640,7 @@ resource "aws_iam_role_policy_attachment" "firehose" {
 
 resource "aws_kinesis_firehose_delivery_stream" "main" {
   count       = var.create_metric_streams_aws_resources ? 1 : 0
+  region      = var.aws_region
   name        = local.firehose_stream_name
   destination = "http_endpoint"
   http_endpoint_configuration {
@@ -703,6 +706,7 @@ resource "aws_iam_role_policy_attachment" "cwstream" {
 
 resource "aws_cloudwatch_metric_stream" "main" {
   count         = var.create_metric_streams_aws_resources ? 1 : 0
+  region        = var.aws_region
   name          = local.cwstream_name
   role_arn      = var.create_metric_streams_aws_resources ? aws_iam_role.cwstream[0].arn : ""
   firehose_arn  = var.create_metric_streams_aws_resources ? aws_kinesis_firehose_delivery_stream.main[0].arn : ""
@@ -728,6 +732,7 @@ resource "aws_cloudwatch_metric_stream" "main" {
 
 resource "aws_s3_bucket" "config" {
   count         = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
+  region        = var.aws_region
   bucket        = "${local.config_bucket_name}-${data.aws_caller_identity.current.account_id}-${local.region_short_name[data.aws_region.current.region]}"
   force_destroy = true
   tags = {
@@ -737,6 +742,7 @@ resource "aws_s3_bucket" "config" {
 
 resource "aws_s3_bucket_versioning" "config" {
   count  = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
+  region = var.aws_region
   bucket = var.create_metric_streams_aws_resources && var.aws_config_enabled ? aws_s3_bucket.config[0].bucket : ""
   versioning_configuration {
     status = "Enabled"
@@ -745,6 +751,7 @@ resource "aws_s3_bucket_versioning" "config" {
 
 resource "aws_s3_bucket_lifecycle_configuration" "config" {
   count  = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
+  region = var.aws_region
   bucket = var.create_metric_streams_aws_resources && var.aws_config_enabled ? aws_s3_bucket.config[0].bucket : ""
   dynamic "rule" {
     for_each = var.config_bucket_expiration_days != null ? [1] : []
@@ -817,6 +824,7 @@ resource "aws_iam_role_policy_attachment" "config" {
 
 resource "aws_config_configuration_recorder" "main" {
   count    = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
+  region   = var.aws_region
   role_arn = var.create_metric_streams_aws_resources && var.aws_config_enabled ? aws_iam_role.config[0].arn : ""
   recording_group {
     all_supported                 = false
@@ -833,12 +841,14 @@ resource "aws_config_configuration_recorder" "main" {
 
 resource "aws_config_delivery_channel" "main" {
   count          = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
+  region         = var.aws_region
   s3_bucket_name = var.create_metric_streams_aws_resources && var.aws_config_enabled ? aws_s3_bucket.config[0].bucket : ""
   depends_on     = [aws_config_configuration_recorder.main]
 }
 
 resource "aws_config_configuration_recorder_status" "main" {
   count      = var.create_metric_streams_aws_resources && var.aws_config_enabled ? 1 : 0
+  region     = var.aws_region
   name       = var.create_metric_streams_aws_resources && var.aws_config_enabled ? aws_config_configuration_recorder.main[0].name : ""
   is_enabled = true
   depends_on = [aws_config_delivery_channel.main]
