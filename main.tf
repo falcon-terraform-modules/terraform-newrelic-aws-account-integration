@@ -705,12 +705,13 @@ resource "aws_iam_role_policy_attachment" "cwstream" {
 }
 
 resource "aws_cloudwatch_metric_stream" "main" {
-  count         = var.create_metric_streams_aws_resources ? 1 : 0
-  region        = var.aws_region
-  name          = local.cwstream_name
-  role_arn      = var.create_metric_streams_aws_resources ? aws_iam_role.cwstream[0].arn : ""
-  firehose_arn  = var.create_metric_streams_aws_resources ? aws_kinesis_firehose_delivery_stream.main[0].arn : ""
-  output_format = var.cloudwatch_metric_stream_output_format
+  count                           = var.create_metric_streams_aws_resources ? 1 : 0
+  region                          = var.aws_region
+  name                            = local.cwstream_name
+  role_arn                        = var.create_metric_streams_aws_resources ? aws_iam_role.cwstream[0].arn : ""
+  firehose_arn                    = var.create_metric_streams_aws_resources ? aws_kinesis_firehose_delivery_stream.main[0].arn : ""
+  output_format                   = var.cloudwatch_metric_stream_output_format
+  include_linked_accounts_metrics = var.cloudwatch_metric_stream_include_linked_accounts_metrics
   dynamic "include_filter" {
     for_each = var.cloudwatch_metric_stream_include_filters
     content {

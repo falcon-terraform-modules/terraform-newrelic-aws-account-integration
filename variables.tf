@@ -475,6 +475,12 @@ variable "cloudwatch_metric_stream_exclude_filters" {
   default = []
 }
 
+variable "cloudwatch_metric_stream_include_linked_accounts_metrics" {
+  description = "If you are creating a metric stream in a monitoring account, set to true to include metrics from source accounts that are linked to this monitoring account. The default is false."
+  type        = bool
+  default     = false
+}
+
 variable "firehose_bucket_expiration_days" {
   description = "Specifies the retention period for error records of Firehose. The value must be `0` or greater. If this parameter is not specified, the retention period will be indefinite."
   type        = number
